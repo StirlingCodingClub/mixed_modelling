@@ -1,0 +1,479 @@
+---
+title: "Introduction to the mathematics of mixed models"
+author: "Brad Duthie"
+date: "03/06/2020"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+linkcolor: blue
+---
+
+
+Some quick background on matrix multiplication
+================================================================================
+
+```{r, echo = FALSE}
+library(knitr);
+A <- matrix(data = 1:4, byrow = TRUE, nrow = 2);
+B <- matrix(data = 5:8, byrow = TRUE, nrow = 2);
+```
+
+Matrix algebra is extremely useful, but it can be confusing at first because it differs in some key ways from normal algebra. Say we have two matrices
+
+$$\textbf{A} = \begin{bmatrix}
+1 & 2 \\
+3 & 4
+\end{bmatrix},$$  
+
+and
+
+$$\textbf{B} =
+\begin{bmatrix}
+5 & 6 \\
+7 & 8
+\end{bmatrix}.$$
+
+If we want to just multiply the two matrices ($\textbf{A}\circ\textbf{B}$), for example, using the familiar rules of scalar multiplication (i.e., get the Hadamard product), then we would do this for two matrices,
+
+$$\begin{bmatrix}
+1 & 2 \\
+3 & 4
+\end{bmatrix} \circ
+\begin{bmatrix}
+5 & 6 \\
+7 & 8
+\end{bmatrix}
+=
+\begin{bmatrix}
+5 & 12 \\
+21 & 32
+\end{bmatrix}.$$
+
+Matrix multiplication works different. To get $\textbf{A}$ times $\textbf{B}$, we need to take the first element of the row of $\textbf{A}$ and multiply it by the first element of the column of $\textbf{B}$, then add this to the second element  of the row of $\textbf{A}$ and multiply it by the second element of the column of $\textbf{B}$. See below for a clearer explanation of what this looks like in practice,
+
+$$\begin{bmatrix}
+1 & 2 \\
+3 & 4
+\end{bmatrix}
+\begin{bmatrix}
+5 & 6 \\
+7 & 8
+\end{bmatrix}
+=
+\begin{bmatrix}
+[(1 \times 5) + (2 \times 7)] & [(1 \times 6) + (2 \times 8)] \\
+[(3 \times 5) + (4 \times 7)] & [(3 \times 6) + (4 \times 8)]
+\end{bmatrix} = 
+\begin{bmatrix}
+19 & 22 \\
+43 & 50
+\end{bmatrix}.$$
+
+
+This might seem arbitrary or strange at first, but there are a lot of good reasons that matrix multiplication works this way. In statistics, one really cool property is that a matrix times its transpose (rows swapped for columns) is the sum of squares,
+
+
+$$\begin{bmatrix}
+1 & 2 & 3 & 4
+\end{bmatrix}
+\begin{bmatrix}
+1 \\ 2 \\ 3 \\ 4
+\end{bmatrix} = 1^2 + 2^2 + 3^2 + 4^2 = 30.$$
+
+The reason for introducing this is just because we will need the matrix algebra for understanding the mixed model. I will keep this as simple as possible to give an idea of what is going on. Note that matrix addition works as you would expect,
+
+$$\begin{bmatrix}
+1 & 2 \\
+3 & 4
+\end{bmatrix} +
+\begin{bmatrix}
+5 & 6 \\
+7 & 8
+\end{bmatrix}
+=
+\begin{bmatrix}
+6 & 8 \\
+10 & 12
+\end{bmatrix}.$$
+
+Just the general linear model first
+================================================================================
+
+To start off, let us consider the familiar linear model,
+
+$$y_i = \beta_{0} + \beta_{1}x_i + \epsilon_{i}.$$
+
+Note that in the above, we are predicting the value of our data point $i$ ($y_{i}$) from $i$'s value of $x$ ($x_{i}$) with the intercept ($\beta_{0}$), slope ($\beta_{1}$), and error of data point $i$ ($\epsilon_{i}$). Note that $\epsilon_{i}$ is just the residual value for $i$; that is, its distance from the regression line (positive values mean that the data point is above the line, negative values mean that it is below).
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+X1 <- c(2.02, 8.6, 4.9, 1.5, 2.8, 4.6, 7.5, 6.2, 3.3, 5.6);
+Y1 <- c(5, 3, 6, 1.3, 5.5, 3.1, 5.2, 6.8, 3.6, 6.6);
+B0 <- as.numeric(lm(Y1~X1)$coefficients[1]);
+B1 <- as.numeric(lm(Y1~X1)$coefficients[2]);
+resi <- lm(Y1~X1)$residuals;
+mxrs <- which(X1 == max(X1));
+par(mar = c(4.5, 4.5, 0.75, 1));
+plot(x = X1, y = Y1, pch = 20, xlab = "Independent Variable X", cex = 1.5, 
+     xlim = c(0, 10), ylim = c(0, 10), cex.lab = 1.25, cex.axis = 1.25,
+     ylab = "Dependent Variable Y", yaxs = "i", xaxs = "i");
+abline(a = B0, b = B1, lwd = 2);
+points(x = c(X1[mxrs], X1[mxrs]), y = c(Y1[mxrs], B0 + B1*X1[mxrs]), type = "l",
+       col = "red", lwd = 1, lty = "dotted");
+text(x = X1[mxrs] - 2, y = mean(c(Y1[mxrs], B0 + B1*X1[mxrs])) - 1, col = "red",
+     cex = 1.5, labels = "Residual");
+text(x = 4, y = B0 + (4 * B1) + 0.4, srt = 8, labels = "Slope (b)", 
+     col = "blue", cex = 1.5);
+text(x = 1.9, y = 2.1, cex = 1.5, "Intercept (a)", col = "orange");
+arrows(x0 = 0.7, x1 = 0, y0 = 2.6, y1 = B0, lwd = 2, length = 0.1, 
+       col = "orange");
+arrows(x0 = 7.6, x1 = 8.6, y0 = 3.25, y1 = 4, lwd = 2, length = 0.1, 
+       col = "red");
+text(x = 1.5, y = 9, labels = "y = a + bx", cex = 1.5);
+```
+
+We need to start out with a small hypothetical data set. We are not looking for something realistic to test a hypothesis; we only need something that will show what is going on mathematically, so we can consider the data below.
+
+```{r, echo = FALSE}
+Y  <- round(rnorm(n = 6, mean = 10, sd = 1), digits = 2);
+X  <- round(rnorm(n = 6, mean = 5, sd = 1), digits = 2);
+K  <- data.frame(Y, X);
+M  <- lm(Y~X);
+B0 <- M$coefficients[1];
+B1 <- M$coefficients[2];
+rs <- residuals(M);
+kable(K);
+```
+
+If we do a simple linear regression model, then we find an intercept of $\beta_{0} =$ `r B0` and a slope of $\beta_{1} =$ `r B1`. Our six module residuals are `r rs`. We can put all of these into a table.
+
+```{r, echo = FALSE}
+BB0 <- rep(B0, length(rs));
+BB1 <- rep(B1, length(rs));
+KK  <- data.frame(Y, BB0, BB1, X, rs);
+colnames(KK) <- c("y_i", "beta_0", "beta_1", "x_i", "epsilon_i");
+kable(KK);
+```
+
+I have written it the way I did above so that you can see how each of the values correspond to our general linear model above,
+
+$$y_i = \beta_{0} + \beta_{1}x_i + \epsilon_{i}.$$
+
+To get a the $y$ value for $i = 1$ ($y_{1}$), we then just need to use the values in the first row,
+
+$$y_i = `r B0` + `r B1` (`r X[1]`) + `r rs[1]`.$$
+
+You can confirm that the maths works here. Another way to write that general linear model is using matrix notation,
+
+$$\textbf{Y} = \textbf{X}\beta + \textbf{e}.$$
+
+For the above example, this would look as follows,
+
+
+
+$$\begin{bmatrix}
+`r Y[1]` \\ `r Y[2]` \\ `r Y[3]` \\ `r Y[4]` \\ `r Y[5]` \\ `r Y[6]`
+\end{bmatrix} = \begin{bmatrix}
+1 & `r X[1]` \\ 1 & `r X[2]` \\ 1 & `r X[3]` \\ 1 & `r X[4]` \\ 1 & `r X[5]` \\ 1 & `r X[6]`
+\end{bmatrix}\begin{bmatrix}
+`r B0` \\ `r B1`
+\end{bmatrix}+\begin{bmatrix}
+`r rs[1]` \\ `r rs[2]` \\ `r rs[3]` \\ `r rs[4]` \\ `r rs[5]` \\ `r rs[6]`
+\end{bmatrix}.$$
+
+We can do the multiplication of $\textbf{X}\beta$ first,
+
+```{r, echo = FALSE}
+XB <- cbind(rep(1, 6), X) %*% c(B0, B1);
+```
+
+$$\begin{bmatrix}
+`r Y[1]` \\ `r Y[2]` \\ `r Y[3]` \\ `r Y[4]` \\ `r Y[5]` \\ `r Y[6]`
+\end{bmatrix} = 
+\begin{bmatrix}
+`r XB[1]` \\ `r XB[2]` \\ `r XB[3]` \\ `r XB[4]` \\ `r XB[5]` \\ `r XB[6]`
+\end{bmatrix}
++ \begin{bmatrix}
+`r rs[1]` \\ `r rs[2]` \\ `r rs[3]` \\ `r rs[4]` \\ `r rs[5]` \\ `r rs[6]`
+\end{bmatrix}.$$
+
+Now we just need to add the two matrices on the right hand side together, 
+
+$$\begin{bmatrix}
+`r Y[1]` \\ `r Y[2]` \\ `r Y[3]` \\ `r Y[4]` \\ `r Y[5]` \\ `r Y[6]`
+\end{bmatrix} = 
+\begin{bmatrix}
+`r Y[1]` \\ `r Y[2]` \\ `r Y[3]` \\ `r Y[4]` \\ `r Y[5]` \\ `r Y[6]`
+\end{bmatrix}.$$
+
+
+Remember that we can have any number of $\beta$ coefficients that we want (assuming that we are not overparameterising the model). Here I have used an example with only one continuous $x$ variable (`r X`). We could just as well add a categorical variable $x_{2}$ that might distinguish two groups (e.g., 'species_1' versus 'species_2'), making $x_{2}$ a binary column that would be added to $\textbf{X}$ with its own coefficient $\beta_{2}$,
+
+$$\textbf{X} = 
+\begin{bmatrix}
+1 & `r X[1]` & 0 \\ 1 & `r X[2]` & 0 \\ 1 & `r X[3]` & 0 \\ 1 & `r X[4]` & 1 \\ 1 & `r X[5]` & 1 \\ 1 & `r X[6]` & 1
+\end{bmatrix}$$
+
+Its coefficiencts would then, be $\beta = \left[\beta_0, \beta_1, \beta_2\right]$. The details are not so important, but I just want to emphasise that $\textbf{X}$ (and $\textbf{Y}$) can have any number of columns. Remember that typically all we have are the $\textbf{X}$ and $\textbf{Y}$ to start with, and we need to solve for the $\beta$ values,
+
+
+$$\begin{bmatrix}
+`r Y[1]` \\ `r Y[2]` \\ `r Y[3]` \\ `r Y[4]` \\ `r Y[5]` \\ `r Y[6]`
+\end{bmatrix} = \begin{bmatrix}
+1 & `r X[1]` \\ 1 & `r X[2]` \\ 1 & `r X[3]` \\ 1 & `r X[4]` \\ 1 & `r X[5]` \\ 1 & `r X[6]`
+\end{bmatrix}\begin{bmatrix}
+\beta_{0} \\
+\beta_{1}
+\end{bmatrix}+\begin{bmatrix}
+\epsilon_1 \\ \epsilon_2 \\ \epsilon_3 \\ \epsilon_4 \\ \epsilon_5 \\ \epsilon_6
+\end{bmatrix}.$$
+
+Note that $\textbf{X}$ is sometimes called the 'design matrix'.
+
+
+Now we can talk about the mixed model
+================================================================================
+
+The model discussed above all focused on **fixed effects**. Now we will add **random effects** to the above to build a **mixed model**. I am going to deliberately avoid defining 'fixed effect' and 'random effect' and instead just focus on what changes mathematically. We are going to add a new term $\textbf{Z}\textbf{u}$ the above model (note that a lot of papers use $\textbf{b}$ instead of $\textbf{u}$, but I want to avoid potential confusion with $\beta$). Our mixed model equation just looks like the below,
+
+$$\textbf{Y} = \textbf{X}\beta + \textbf{Z}\textbf{u} + \textbf{e}.$$
+
+What we are doing is adding the product of group indicators ($\textbf{Z}$) and their random effects ($\textbf{u}$, their deviation $u_{i}$ from the mean 0). We can read in the `nlme` R library and the data set 'dung', which looks like the below.
+
+```{r}
+library(nlme);
+dung <- read.csv("dung.csv");
+print(dung);
+```
+
+This is a subset of data from a set of experiments that I ran in which containers (rows) of wet cow dung were placed out for a parent generation of dungflies to lay their eggs. The mass of the wet dung was recorded before the experiment for each container. Offspring that emerged from each dung container were counted (`flies`), and then the wet dung was placed in the oven to get the dry mass. The proportion of mass still remaining after drying was calculated (`pr_dung`), but due to experimental constraints (timing of experiments and the size of the oven), dung from containers needed to be placed in the oven in blocks (`oven_block`). Hence, the block in which the container went into the oven could affect `pr_dung`, so we want to include this as a random effect in the model. To summarise, the three columns of data above are as follows:
+
+- **pr_dung**: Oven-dried mass of a dung container divided by its original wet mass
+- **flies**: The number of offspring flies that emerged from a container
+- **oven_block**: The group (i.e., 'block') in which the dung container was placed in the oven
+
+We can place the known values from the data set above into our mixed model equation,
+
+
+$$\begin{bmatrix}
+`r dung[1, 1]` \\ `r dung[2, 1]` \\ `r dung[3, 1]` \\ `r dung[4, 1]` \\ `r dung[5, 1]` \\ `r dung[6, 1]` \\
+`r dung[7, 1]` \\ `r dung[8, 1]` \\ `r dung[9, 1]` \\ `r dung[10, 1]` \\ `r dung[11, 1]` \\ `r dung[12, 1]` \\
+`r dung[13, 1]` \\ `r dung[14, 1]` \\ `r dung[15, 1]` \\ `r dung[16, 1]` \\ `r dung[17, 1]` \\ `r dung[18, 1]` \\
+\end{bmatrix} = \begin{bmatrix}
+1 & `r dung[1, 2]` \\ 1 & `r dung[2, 2]` \\ 1 & `r dung[3, 2]` \\ 1 & `r dung[4, 2]` \\ 1 & `r dung[5, 2]` \\ 1 & `r dung[6, 2]` \\
+1 & `r dung[7, 2]` \\ 1 & `r dung[8, 2]` \\ 1 & `r dung[9, 2]` \\ 1 & `r dung[10, 2]` \\ 1 & `r dung[11, 2]` \\ 1 & `r dung[12, 2]` \\
+1 & `r dung[13, 2]` \\ 1 & `r dung[14, 2]` \\ 1 & `r dung[15, 2]` \\ 1 & `r dung[16, 2]` \\ 1 & `r dung[17, 2]` \\ 1 & `r dung[18, 2]` \\
+\end{bmatrix} \begin{bmatrix}
+\beta_{0} \\
+\beta_{1}
+\end{bmatrix}+
+\begin{bmatrix}
+1 & 0 & 0 \\
+1 & 0 & 0 \\
+1 & 0 & 0 \\
+1 & 0 & 0 \\
+1 & 0 & 0 \\
+1 & 0 & 0 \\
+1 & 0 & 0 \\
+0 & 1 & 0 \\
+0 & 1 & 0 \\
+0 & 1 & 0 \\
+0 & 1 & 0 \\
+0 & 1 & 0 \\
+0 & 0 & 1 \\
+0 & 0 & 1 \\
+0 & 0 & 1 \\
+0 & 0 & 1 \\
+0 & 0 & 1 \\
+0 & 0 & 1 \\
+\end{bmatrix}
+\begin{bmatrix}
+u_{1} \\
+u_{2} \\
+u_{3} 
+\end{bmatrix}
++ \begin{bmatrix}
+\epsilon_1 \\ \epsilon_2 \\ \epsilon_3 \\ \epsilon_4 \\ \epsilon_5 \\ \epsilon_6 \\
+\epsilon_7 \\ \epsilon_8 \\ \epsilon_9 \\ \epsilon_{10} \\ \epsilon_{11} \\ \epsilon_{12} \\
+\epsilon_{13} \\ \epsilon_{14} \\ \epsilon_{15} \\ \epsilon_{16} \\ \epsilon_{17} \\ \epsilon_{18}
+\end{bmatrix}.$$
+
+
+
+
+
+Here is how we would run a mixed effects model in R.
+
+```{r}
+mod  <- lme(pr_dung ~ flies, random = ~ 1|oven_block, data = dung);
+```
+
+I do not want to focus on the R notation here, or the output, but we can grab the values of $\beta$ and $\textbf{u}$, and $\textbf{e}$ to show how they relate to our equation. We can pull these out of `mod` and put them in matrix form as follows.
+
+```{r}
+beta <- as.matrix(fixed.effects(mod));
+uu   <- as.matrix(random.effects(mod));
+ee   <- as.matrix(residuals(mod));
+```
+
+Here are our `beta` ($\beta$) values.
+
+```{r}
+print(beta);
+```
+
+
+Here are our `uu` ($\textbf{u}$) values.
+
+```{r}
+print(uu);
+```
+
+Note that the $\textbf{u}$ values sum to zero. Each $u_{i}$ is a deviation from the mean of $u$, where $u$ is normally distributed around zero. Here are our `ee` ($\epsilon$) values (residuals).
+
+```{r}
+print(ee);
+```
+
+Now we can put these values back into the equation above and confirm that the right side of the equation equals the left side,
+
+
+$$\begin{bmatrix}
+`r dung[1, 1]` \\ `r dung[2, 1]` \\ `r dung[3, 1]` \\ `r dung[4, 1]` \\ `r dung[5, 1]` \\ `r dung[6, 1]` \\
+`r dung[7, 1]` \\ `r dung[8, 1]` \\ `r dung[9, 1]` \\ `r dung[10, 1]` \\ `r dung[11, 1]` \\ `r dung[12, 1]` \\
+`r dung[13, 1]` \\ `r dung[14, 1]` \\ `r dung[15, 1]` \\ `r dung[16, 1]` \\ `r dung[17, 1]` \\ `r dung[18, 1]` \\
+\end{bmatrix} = \begin{bmatrix}
+1 & `r dung[1, 2]` \\ 1 & `r dung[2, 2]` \\ 1 & `r dung[3, 2]` \\ 1 & `r dung[4, 2]` \\ 1 & `r dung[5, 2]` \\ 1 & `r dung[6, 2]` \\
+1 & `r dung[7, 2]` \\ 1 & `r dung[8, 2]` \\ 1 & `r dung[9, 2]` \\ 1 & `r dung[10, 2]` \\ 1 & `r dung[11, 2]` \\ 1 & `r dung[12, 2]` \\
+1 & `r dung[13, 2]` \\ 1 & `r dung[14, 2]` \\ 1 & `r dung[15, 2]` \\ 1 & `r dung[16, 2]` \\ 1 & `r dung[17, 2]` \\ 1 & `r dung[18, 2]` \\
+\end{bmatrix} \begin{bmatrix}
+0.1662317 \\
+-0.00003466743
+\end{bmatrix}+
+\begin{bmatrix}
+1 & 0 & 0 \\
+1 & 0 & 0 \\
+1 & 0 & 0 \\
+1 & 0 & 0 \\
+1 & 0 & 0 \\
+1 & 0 & 0 \\
+1 & 0 & 0 \\
+0 & 1 & 0 \\
+0 & 1 & 0 \\
+0 & 1 & 0 \\
+0 & 1 & 0 \\
+0 & 1 & 0 \\
+0 & 0 & 1 \\
+0 & 0 & 1 \\
+0 & 0 & 1 \\
+0 & 0 & 1 \\
+0 & 0 & 1 \\
+0 & 0 & 1 \\
+\end{bmatrix}
+\begin{bmatrix}
+-0.016207919 \\
+0.007158668 \\
+0.009049251 
+\end{bmatrix}
++ \begin{bmatrix}
+`r ee[1]` \\ `r ee[2]` \\ `r ee[3]` \\ `r ee[4]` \\ `r ee[5]` \\ `r ee[6]` \\
+`r ee[7]` \\ `r ee[8]` \\ `r ee[9]` \\ `r ee[10]` \\ `r ee[11]` \\ `r ee[12]` \\
+`r ee[13]` \\ `r ee[14]` \\ `r ee[15]` \\ `r ee[16]` \\ `r ee[17]` \\ `r ee[18]`
+\end{bmatrix}.$$
+
+We can do some of the calculations on the right hand side to simplify,
+
+```{r, echo = FALSE}
+X    <- cbind(rep(x = 1, times = dim(dung)[1]), dung$flies);
+Z    <- matrix(data = 0, nrow = dim(dung)[1], ncol = dim(uu)[1]);
+for(i in 1:dim(Z)[1]){
+  Z[i, dung$oven_block[i]] <- 1;
+}
+XB <- X %*% beta;
+Zu <- Z %*% uu;
+```
+
+
+$$\begin{bmatrix}
+`r dung[1, 1]` \\ `r dung[2, 1]` \\ `r dung[3, 1]` \\ `r dung[4, 1]` \\ `r dung[5, 1]` \\ `r dung[6, 1]` \\
+`r dung[7, 1]` \\ `r dung[8, 1]` \\ `r dung[9, 1]` \\ `r dung[10, 1]` \\ `r dung[11, 1]` \\ `r dung[12, 1]` \\
+`r dung[13, 1]` \\ `r dung[14, 1]` \\ `r dung[15, 1]` \\ `r dung[16, 1]` \\ `r dung[17, 1]` \\ `r dung[18, 1]` \\
+\end{bmatrix} = \begin{bmatrix}
+`r XB[1]` \\
+`r XB[2]` \\
+`r XB[3]` \\
+`r XB[4]` \\
+`r XB[5]` \\
+`r XB[6]` \\
+`r XB[7]` \\
+`r XB[8]` \\
+`r XB[9]` \\
+`r XB[10]` \\
+`r XB[11]` \\
+`r XB[12]` \\
+`r XB[13]` \\
+`r XB[14]` \\
+`r XB[15]` \\
+`r XB[16]` \\
+`r XB[17]` \\
+`r XB[18]`
+\end{bmatrix} +
+\begin{bmatrix}
+`r Zu[1]` \\
+`r Zu[2]` \\
+`r Zu[3]` \\
+`r Zu[4]` \\
+`r Zu[5]` \\
+`r Zu[6]` \\
+`r Zu[7]` \\
+`r Zu[8]` \\
+`r Zu[9]` \\
+`r Zu[10]` \\
+`r Zu[11]` \\
+`r Zu[12]` \\
+`r Zu[13]` \\
+`r Zu[14]` \\
+`r Zu[15]` \\
+`r Zu[16]` \\
+`r Zu[17]` \\
+`r Zu[18]`
+\end{bmatrix}
++ \begin{bmatrix}
+`r ee[1]` \\ `r ee[2]` \\ `r ee[3]` \\ `r ee[4]` \\ `r ee[5]` \\ `r ee[6]` \\
+`r ee[7]` \\ `r ee[8]` \\ `r ee[9]` \\ `r ee[10]` \\ `r ee[11]` \\ `r ee[12]` \\
+`r ee[13]` \\ `r ee[14]` \\ `r ee[15]` \\ `r ee[16]` \\ `r ee[17]` \\ `r ee[18]`
+\end{bmatrix}.$$
+
+
+The way that we could do this in R is as follows, first setting up $\textbf{X}$ and $\textbf{Z}$.
+
+```{r}
+X    <- cbind(rep(x = 1, times = dim(dung)[1]), dung$flies);
+Z    <- matrix(data = 0, nrow = dim(dung)[1], ncol = dim(uu)[1]);
+for(i in 1:dim(Z)[1]){
+  Z[i, dung$oven_block[i]] <- 1;
+}
+```
+
+The for loop is just a concise way of getting Z in the form we need. Now `X` looks like the below.
+
+```{r, echo = FALSE}
+print(X)
+```
+
+This is what `Z` looks like.
+
+```{r, echo = FALSE}
+print(Z)
+```
+
+We can do the matrix multiplication to get back `pr_dung` using the following.
+
+```{r}
+Y <- X %*% beta + Z %*% uu + ee;
+print(cbind(Y, dung$pr_dung));
+```
+
+Models can of course get a lot more complex than what we just did, but this should give you a general idea of what is going on in R when you run a mixed model.
+
+
