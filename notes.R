@@ -6,6 +6,19 @@ dung <- read.csv("dung.csv");
 print(dung);
 
 mod  <- lme(pr_dung ~ flies, random = ~ 1|oven_block, data = dung);
+
+# The R output
+summary(mod);
+
+
+
+
+
+
+
+
+
+# The underlying model
 beta <- as.matrix(fixed.effects(mod));
 uu   <- as.matrix(random.effects(mod));
 ee   <- as.matrix(residuals(mod));
