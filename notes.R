@@ -5,7 +5,7 @@ dung <- read.csv("dung.csv");
 # Take a look at the small data set (small so we can see the maths)
 print(dung);
 
-mod  <- lme(pr_dung ~ flies, random = ~ 1|oven_block, data = dung);
+mod  <- lme(pr_dung ~ 1 + flies, random = ~ 1|oven_block, data = dung);
 
 # The R output
 summary(mod);
@@ -29,7 +29,6 @@ Z    <- matrix(data = 0, nrow = dim(dung)[1], ncol = dim(uu)[1]);
 for(i in 1:dim(Z)[1]){
   Z[i, dung$oven_block[i]] <- 1;
 }
-
 
 Y <- X %*% beta + Z %*% uu + ee;
 
