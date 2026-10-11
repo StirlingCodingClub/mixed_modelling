@@ -1,7 +1,7 @@
 ---
 title: "Introduction to the mathematics of mixed models"
 author: "Brad Duthie"
-date: "08 October 2025"
+date: "14 October 2026"
 output:
   html_document: default
   word_document: default

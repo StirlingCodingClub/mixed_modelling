@@ -11,7 +11,7 @@
 
 <meta name="author" content="Brad Duthie" />
 
-<meta name="date" content="2025-10-08" />
+<meta name="date" content="2026-10-14" />
 
 <title>Introduction to the mathematics of mixed models</title>
 
@@ -353,7 +353,7 @@ display: none;
 <h1 class="title toc-ignore">Introduction to the mathematics of mixed
 models</h1>
 <h4 class="author">Brad Duthie</h4>
-<h4 class="date">08 October 2025</h4>
+<h4 class="date">14 October 2026</h4>
 
 </div>
 
@@ -464,36 +464,37 @@ consider the data below.</p>
 </thead>
 <tbody>
 <tr class="odd">
+<td align="right">9.77</td>
+<td align="right">4.57</td>
+</tr>
+<tr class="even">
 <td align="right">9.76</td>
-<td align="right">4.90</td>
-</tr>
-<tr class="even">
-<td align="right">9.81</td>
-<td align="right">5.39</td>
+<td align="right">4.37</td>
 </tr>
 <tr class="odd">
-<td align="right">9.97</td>
-<td align="right">6.94</td>
+<td align="right">10.99</td>
+<td align="right">3.54</td>
 </tr>
 <tr class="even">
-<td align="right">10.24</td>
-<td align="right">7.43</td>
+<td align="right">10.12</td>
+<td align="right">3.80</td>
 </tr>
 <tr class="odd">
-<td align="right">9.39</td>
-<td align="right">6.70</td>
+<td align="right">10.52</td>
+<td align="right">5.04</td>
 </tr>
 <tr class="even">
-<td align="right">8.95</td>
-<td align="right">6.71</td>
+<td align="right">9.33</td>
+<td align="right">4.44</td>
 </tr>
 </tbody>
 </table>
 <p>If we do a simple linear regression model, then we find an intercept
-of <span class="math inline">\(\beta_{0} =\)</span> 9.4601801 and a
-slope of <span class="math inline">\(\beta_{1} =\)</span> 0.0356953. Our
-six module residuals are 0.124913, 0.1574223, 0.2620946, 0.514604,
--0.3093385, -0.7496954. We can put all of these into a table.</p>
+of <span class="math inline">\(\beta_{0} =\)</span> 11.8226197 and a
+slope of <span class="math inline">\(\beta_{1} =\)</span> -0.4055015.
+Our six module residuals are -0.1994779, -0.2905782, 0.6028556,
+-0.1617141, 0.7411078, -0.6921931. We can put all of these into a
+table.</p>
 <table>
 <thead>
 <tr class="header">
@@ -506,46 +507,46 @@ six module residuals are 0.124913, 0.1574223, 0.2620946, 0.514604,
 </thead>
 <tbody>
 <tr class="odd">
+<td align="right">9.77</td>
+<td align="right">11.82262</td>
+<td align="right">-0.4055015</td>
+<td align="right">4.57</td>
+<td align="right">-0.1994779</td>
+</tr>
+<tr class="even">
 <td align="right">9.76</td>
-<td align="right">9.46018</td>
-<td align="right">0.0356953</td>
-<td align="right">4.90</td>
-<td align="right">0.1249130</td>
-</tr>
-<tr class="even">
-<td align="right">9.81</td>
-<td align="right">9.46018</td>
-<td align="right">0.0356953</td>
-<td align="right">5.39</td>
-<td align="right">0.1574223</td>
+<td align="right">11.82262</td>
+<td align="right">-0.4055015</td>
+<td align="right">4.37</td>
+<td align="right">-0.2905782</td>
 </tr>
 <tr class="odd">
-<td align="right">9.97</td>
-<td align="right">9.46018</td>
-<td align="right">0.0356953</td>
-<td align="right">6.94</td>
-<td align="right">0.2620946</td>
+<td align="right">10.99</td>
+<td align="right">11.82262</td>
+<td align="right">-0.4055015</td>
+<td align="right">3.54</td>
+<td align="right">0.6028556</td>
 </tr>
 <tr class="even">
-<td align="right">10.24</td>
-<td align="right">9.46018</td>
-<td align="right">0.0356953</td>
-<td align="right">7.43</td>
-<td align="right">0.5146040</td>
+<td align="right">10.12</td>
+<td align="right">11.82262</td>
+<td align="right">-0.4055015</td>
+<td align="right">3.80</td>
+<td align="right">-0.1617141</td>
 </tr>
 <tr class="odd">
-<td align="right">9.39</td>
-<td align="right">9.46018</td>
-<td align="right">0.0356953</td>
-<td align="right">6.70</td>
-<td align="right">-0.3093385</td>
+<td align="right">10.52</td>
+<td align="right">11.82262</td>
+<td align="right">-0.4055015</td>
+<td align="right">5.04</td>
+<td align="right">0.7411078</td>
 </tr>
 <tr class="even">
-<td align="right">8.95</td>
-<td align="right">9.46018</td>
-<td align="right">0.0356953</td>
-<td align="right">6.71</td>
-<td align="right">-0.7496954</td>
+<td align="right">9.33</td>
+<td align="right">11.82262</td>
+<td align="right">-0.4055015</td>
+<td align="right">4.44</td>
+<td align="right">-0.6921931</td>
 </tr>
 </tbody>
 </table>
@@ -555,56 +556,57 @@ the values correspond to our general linear model above,</p>
 \epsilon_{i}.\]</span></p>
 <p>To get a the <span class="math inline">\(y\)</span> value for <span class="math inline">\(i = 1\)</span> (<span class="math inline">\(y_{1}\)</span>), we then just need to use the
 values in the first row,</p>
-<p><span class="math display">\[y_i = 9.4601801 + 0.0356953 (4.9) +
-0.124913.\]</span></p>
+<p><span class="math display">\[y_i = 11.8226197 + -0.4055015 (4.57) +
+-0.1994779.\]</span></p>
 <p>You can confirm that the maths works here. Another way to write that
 general linear model is using matrix notation,</p>
 <p><span class="math display">\[\textbf{Y} = \textbf{X}\beta +
 \textbf{e}.\]</span></p>
 <p>For the above example, this would look as follows,</p>
 <p><span class="math display">\[\begin{bmatrix}
-9.76 \\ 9.81 \\ 9.97 \\ 10.24 \\ 9.39 \\ 8.95
+9.77 \\ 9.76 \\ 10.99 \\ 10.12 \\ 10.52 \\ 9.33
 \end{bmatrix} = \begin{bmatrix}
-1 &amp; 4.9 \\ 1 &amp; 5.39 \\ 1 &amp; 6.94 \\ 1 &amp; 7.43 \\ 1 &amp;
-6.7 \\ 1 &amp; 6.71
+1 &amp; 4.57 \\ 1 &amp; 4.37 \\ 1 &amp; 3.54 \\ 1 &amp; 3.8 \\ 1 &amp;
+5.04 \\ 1 &amp; 4.44
 \end{bmatrix}\begin{bmatrix}
-9.4601801 \\ 0.0356953
+11.8226197 \\ -0.4055015
 \end{bmatrix}+\begin{bmatrix}
-0.124913 \\ 0.1574223 \\ 0.2620946 \\ 0.514604 \\ -0.3093385 \\
--0.7496954
+-0.1994779 \\ -0.2905782 \\ 0.6028556 \\ -0.1617141 \\ 0.7411078 \\
+-0.6921931
 \end{bmatrix}.\]</span></p>
 <p>We can do the multiplication of <span class="math inline">\(\textbf{X}\beta\)</span> first,</p>
 <p><span class="math display">\[\begin{bmatrix}
-9.76 \\ 9.81 \\ 9.97 \\ 10.24 \\ 9.39 \\ 8.95
+9.77 \\ 9.76 \\ 10.99 \\ 10.12 \\ 10.52 \\ 9.33
 \end{bmatrix} =
 \begin{bmatrix}
-9.635087 \\ 9.6525777 \\ 9.7079054 \\ 9.725396 \\ 9.6993385 \\ 9.6996954
+9.9694779 \\ 10.0505782 \\ 10.3871444 \\ 10.2817141 \\ 9.7788922 \\
+10.0221931
 \end{bmatrix}
 + \begin{bmatrix}
-0.124913 \\ 0.1574223 \\ 0.2620946 \\ 0.514604 \\ -0.3093385 \\
--0.7496954
+-0.1994779 \\ -0.2905782 \\ 0.6028556 \\ -0.1617141 \\ 0.7411078 \\
+-0.6921931
 \end{bmatrix}.\]</span></p>
 <p>Now we just need to add the two matrices on the right hand side
 together,</p>
 <p><span class="math display">\[\begin{bmatrix}
-9.76 \\ 9.81 \\ 9.97 \\ 10.24 \\ 9.39 \\ 8.95
+9.77 \\ 9.76 \\ 10.99 \\ 10.12 \\ 10.52 \\ 9.33
 \end{bmatrix} =
 \begin{bmatrix}
-9.76 \\ 9.81 \\ 9.97 \\ 10.24 \\ 9.39 \\ 8.95
+9.77 \\ 9.76 \\ 10.99 \\ 10.12 \\ 10.52 \\ 9.33
 \end{bmatrix}.\]</span></p>
 <p>Remember that we can have any number of <span class="math inline">\(\beta\)</span> coefficients that we want (assuming
 that we are not overparameterising the model). Here I have used an
 example with only one continuous <span class="math inline">\(x\)</span>
-variable (4.9, 5.39, 6.94, 7.43, 6.7, 6.71). We could just as well add a
-categorical variable <span class="math inline">\(x_{2}\)</span> that
+variable (4.57, 4.37, 3.54, 3.8, 5.04, 4.44). We could just as well add
+a categorical variable <span class="math inline">\(x_{2}\)</span> that
 might distinguish two groups (e.g., ‘species_1’ versus ‘species_2’),
 making <span class="math inline">\(x_{2}\)</span> a binary column that
 would be added to <span class="math inline">\(\textbf{X}\)</span> with
 its own coefficient <span class="math inline">\(\beta_{2}\)</span>,</p>
 <p><span class="math display">\[\textbf{X} =
 \begin{bmatrix}
-1 &amp; 4.9 &amp; 0 \\ 1 &amp; 5.39 &amp; 0 \\ 1 &amp; 6.94 &amp; 0 \\ 1
-&amp; 7.43 &amp; 1 \\ 1 &amp; 6.7 &amp; 1 \\ 1 &amp; 6.71 &amp; 1
+1 &amp; 4.57 &amp; 0 \\ 1 &amp; 4.37 &amp; 0 \\ 1 &amp; 3.54 &amp; 0 \\
+1 &amp; 3.8 &amp; 1 \\ 1 &amp; 5.04 &amp; 1 \\ 1 &amp; 4.44 &amp; 1
 \end{bmatrix}\]</span></p>
 <p>Its coefficiencts would then, be <span class="math inline">\(\beta =
 \left[\beta_0, \beta_1, \beta_2\right]\)</span>. The details are not so
@@ -612,10 +614,10 @@ important, but I just want to emphasise that <span class="math inline">\(\textbf
 columns. Remember that typically all we have are the <span class="math inline">\(\textbf{X}\)</span> and <span class="math inline">\(\textbf{Y}\)</span> to start with, and we need to
 solve for the <span class="math inline">\(\beta\)</span> values,</p>
 <p><span class="math display">\[\begin{bmatrix}
-9.76 \\ 9.81 \\ 9.97 \\ 10.24 \\ 9.39 \\ 8.95
+9.77 \\ 9.76 \\ 10.99 \\ 10.12 \\ 10.52 \\ 9.33
 \end{bmatrix} = \begin{bmatrix}
-1 &amp; 4.9 \\ 1 &amp; 5.39 \\ 1 &amp; 6.94 \\ 1 &amp; 7.43 \\ 1 &amp;
-6.7 \\ 1 &amp; 6.71
+1 &amp; 4.57 \\ 1 &amp; 4.37 \\ 1 &amp; 3.54 \\ 1 &amp; 3.8 \\ 1 &amp;
+5.04 \\ 1 &amp; 4.44
 \end{bmatrix}\begin{bmatrix}
 \beta_{0} \\
 \beta_{1}
